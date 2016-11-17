@@ -662,5 +662,3 @@ using g++ (Ubuntu 4.4.3-4ubuntu5) 4.4.3 x86_64 platform (Kubunto 10.04 LTS).
 
 
 
-http://www.naskitis.com
-
