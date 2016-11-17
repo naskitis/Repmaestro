@@ -1,0 +1,105 @@
+
+-----------------------------------------
+Mon Apr 26 16:44:23 EST 2010
+
+data//chr10#chr11_repmaestro_mum.dat
+# reading input file "B.fa" of length 131129516
+# construct suffix tree for sequence of length 131129516
+# (maximum reference length is 536870908)
+# (maximum query length is 4294967295)
+# process 1311295 characters per dot
+#....................................................................................................
+# CONSTRUCTIONTIME ./mummer B.fa 96.17
+# reading input file "A.fa" of length 131314738
+# matching query-file "A.fa"
+# against subject-file "B.fa"
+# COMPLETETIME ./mummer B.fa 212.60
+# SPACE ./mummer B.fa 250.29
+
+real	3m32.783s
+user	3m30.810s
+sys	0m1.790s
+
+-----------------------------------------
+Mon Apr 26 17:06:42 EST 2010
+
+data//chr13#chr14_repmaestro_mum.dat
+# reading input file "B.fa" of length 88289540
+# construct suffix tree for sequence of length 88289540
+# (maximum reference length is 536870908)
+# (maximum query length is 4294967295)
+# process 882895 characters per dot
+#....................................................................................................
+# CONSTRUCTIONTIME ./mummer B.fa 62.45
+# reading input file "A.fa" of length 95589878
+# matching query-file "A.fa"
+# against subject-file "B.fa"
+# COMPLETETIME ./mummer B.fa 143.79
+# SPACE ./mummer B.fa 175.36
+
+real	2m23.899s
+user	2m22.540s
+sys	0m1.250s
+
+-----------------------------------------
+Mon Apr 26 17:23:59 EST 2010
+
+data//chr16#chr17_repmaestro_mum.dat
+# reading input file "B.fa" of length 77795210
+# construct suffix tree for sequence of length 77795210
+# (maximum reference length is 536870908)
+# (maximum query length is 4294967295)
+# process 777952 characters per dot
+#....................................................................................................
+# CONSTRUCTIONTIME ./mummer B.fa 52.78
+# reading input file "A.fa" of length 78884753
+# matching query-file "A.fa"
+# against subject-file "B.fa"
+# COMPLETETIME ./mummer B.fa 116.34
+# SPACE ./mummer B.fa 149.42
+
+real	1m56.454s
+user	1m55.320s
+sys	0m1.030s
+
+-----------------------------------------
+Mon Apr 26 17:39:09 EST 2010
+
+data//chr19#chr20_repmaestro_mum.dat
+# reading input file "B.fa" of length 59505520
+# construct suffix tree for sequence of length 59505520
+# (maximum reference length is 536870908)
+# (maximum query length is 4294967295)
+# process 595055 characters per dot
+#....................................................................................................
+# CONSTRUCTIONTIME ./mummer B.fa 40.47
+# reading input file "A.fa" of length 55808983
+# matching query-file "A.fa"
+# against subject-file "B.fa"
+# COMPLETETIME ./mummer B.fa 81.87
+# SPACE ./mummer B.fa 109.97
+
+real	1m21.963s
+user	1m20.930s
+sys	0m0.950s
+
+-----------------------------------------
+Mon Apr 26 17:51:53 EST 2010
+
+data//chrY#chr21_repmaestro_mum.dat
+# reading input file "B.fa" of length 35106642
+# construct suffix tree for sequence of length 35106642
+# (maximum reference length is 536870908)
+# (maximum query length is 4294967295)
+# process 351066 characters per dot
+#....................................................................................................
+# CONSTRUCTIONTIME ./mummer B.fa 22.66
+# reading input file "A.fa" of length 25653566
+# matching query-file "A.fa"
+# against subject-file "B.fa"
+# COMPLETETIME ./mummer B.fa 40.86
+# SPACE ./mummer B.fa 57.95
+
+real	0m40.936s
+user	0m40.290s
+sys	0m0.570s

@@ -1,0 +1,18 @@
+#! /bin/bash
+ 
+if [[ -z $1 ]]
+then
+  echo;
+  echo "-------------------------------------------------------------------------------------------------------";
+  echo "Incorrect usage.  Try: ./FastA_to_plain.bsh input-file-name output-file-name";
+  echo "input-file-name:  this is the name of the FastA file you wish to convert into plain-text (.dat)."
+  echo "                  Note, this will generate a new copy of the file."
+  echo "This script will remove all '>' and characters that appear on the same line (along with the line itself)."	
+  echo "-------------------------------------------------------------------------------------------------------";
+  echo ""
+  exit 1;
+fi
+echo "Converting $1 (FastA) to plain-text ($1.dat)";
+
+#This script simply removes the > character (and any other chars before or after it).
+sed  's/.*>.*//g' $1 | sed '/^$/d' > $2

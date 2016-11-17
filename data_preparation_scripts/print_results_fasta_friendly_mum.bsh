@@ -1,0 +1,41 @@
+#! /bin/bash
+
+RESULTS=$1
+FA_HEADER_1=$2
+FA_HEADER_2=$3
+
+# check that the user supplied the repmaestro results file
+if [ -z ${RESULTS}  ]
+then
+   echo "You have not specified the MuM result file (from repmaestro) to format! (first arg)";
+   exit 1;
+fi
+
+#  check that the user supplied the repmaestro header files
+if [ -z ${FA_HEADER_1}  ]
+then
+   echo "You have not specified the MuM reference (first sequence before the \#) FastA file (.fa) (second arg)";
+   exit 1;
+fi
+
+#  check that the user supplied the repmaestro header files
+if [ -z ${FA_HEADER_2}  ]
+then
+   echo "You have not specified the MuM query FastA file (.fa) (third arg)";
+   exit 1;
+fi
+
+cat $FA_HEADER_1.headers > tmp_mum_header;
+echo `ls -l $FA_HEADER_1` | awk '{print $5+1}' > tmp1;
+filesize=`cat tmp1`;
+
+cat $FA_HEADER_2.headers | awk -v foffset="$filesize" 'BEGIN {FS = " ";}; 
+{  
+    printf("%d ", $1+foffset);
+    for (i=2; i<=NF; ++i) printf("%s ", $i);
+    printf("\n");
+}' >> tmp_mum_header;
+
+./print_results_fasta_friendly.bsh $RESULTS tmp_mum_header;
+
+rm -rf tmp1 tmp_mum_header;

@@ -1,0 +1,14 @@
+#! /bin/bash
+
+FILE=$1
+
+# report the status of the cache flusher
+if [ ! -z ${FILE}  ]
+  then
+    echo "The file pretty printed is: "$FILE;
+  else
+    echo "You have not specified the file to pretty print!";
+    exit 1;
+fi
+
+cat $FILE | grep "repmaestro\|real" | sed -e 's/.*\///g' | sed -e 's/real//g' | tr -s '\n' ' ' | sed 's/s /\n/g' | awk '{split($2, a, "m"); printf("%-35s %-10s   %10.1f sec\n",$1,$2,(a[1]*60.00)+a[2]);}'

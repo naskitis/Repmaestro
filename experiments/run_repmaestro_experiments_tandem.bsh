@@ -1,0 +1,238 @@
+#! /bin/bash
+
+echo "Running RepMaestro Experiments for Tandem Repeats.";
+
+# leave as blank to disable
+FLUSH_CACHE=$2
+
+#disable the swap, to enforce memory upper-bounds.  Otherwise, a program that
+#grows beyond RAM capacity will move into swap, which will be very slow and
+#can grind the system down to a halt.  So, its best if the O/S kills a process
+#if it grows too big, as intended. you may need root access for this.
+# --- commented out for now: assuming the swap is disabled before the script starts. 
+#echo "Disabling swap";
+#sudo swapoff -a
+
+# this is the (full path) location of all of the database/sequence files, including the pre-built indexes.
+DATABASE_DIR=$1
+
+# output file
+VMATCH64_OUT4=vmatch64.tandem.results_lcp4;
+VMATCH64_OUT8=vmatch64.tandem.results_lcp8;
+VMATCH64_OUT16=vmatch64.tandem.results_lcp16;
+VMATCH64_OUT32=vmatch64.tandem.results_lcp32;
+
+REPMAS_BUFF_OUT4=repmaestro.tandem_lcp4;
+REPMAS_BUFF_OUT8=repmaestro.tandem_lcp8;
+REPMAS_BUFF_OUT16=repmaestro.tandem_lcp16;
+REPMAS_BUFF_OUT32=repmaestro.tandem_lcp32;
+
+REPMAS_UNBUFF_OUT4=repmaestro.unbuff_tandem_lcp4;
+REPMAS_UNBUFF_OUT8=repmaestro.unbuff_tandem_lcp8;
+REPMAS_UNBUFF_OUT16=repmaestro.unbuff_tandem_lcp16;
+REPMAS_UNBUFF_OUT32=repmaestro.unbuff_tandem_lcp32;
+
+# report the status of the cache flusher
+if [ ! -z ${FLUSH_CACHE}  ]
+  then
+    echo "Cache flushing is enabled.";
+  else
+    echo "Cache flushing is disabled.";
+fi
+
+# report the status of the cache flusher
+if [ ! -z ${DATABASE_DIR}  ]
+  then
+    echo "Location of the database repository: "$DATABASE_DIR
+  else
+    echo "You have not specified the location of the database repository!";
+    echo "It is recommended to store the repository on a different disk.";
+    exit 1;
+fi
+
+# function to flush system caches, if enabled.
+function flush_cache {
+  if [ ! -z ${FLUSH_CACHE}  ]
+  then
+     ./gensort -a 42393600 flush.dataset;
+     ./ozsort flush.dataset flush.dataset;
+  fi
+}
+
+function prepare_output
+{
+  echo $1; echo "LCP 4,8,16,32";
+  echo "" >> $VMATCH64_OUT4;
+  echo "-----------------------------------------" >> $VMATCH64_OUT4;
+  echo `date` >> $VMATCH64_OUT4;
+  echo "" >> $VMATCH64_OUT4;
+  echo $1 >> $VMATCH64_OUT4;
+
+  echo "" >> $VMATCH64_OUT8;
+  echo "-----------------------------------------" >> $VMATCH64_OUT8;
+  echo `date` >> $VMATCH64_OUT8;
+  echo "" >> $VMATCH64_OUT8;
+  echo $1 >> $VMATCH64_OUT8;
+
+  echo "" >> $VMATCH64_OUT16;
+  echo "-----------------------------------------" >> $VMATCH64_OUT16;
+  echo `date` >> $VMATCH64_OUT16;
+  echo "" >> $VMATCH64_OUT16;
+  echo $1 >> $VMATCH64_OUT16;
+
+  echo "" >> $VMATCH64_OUT32;
+  echo "-----------------------------------------" >> $VMATCH64_OUT32;
+  echo `date` >> $VMATCH64_OUT32;
+  echo "" >> $VMATCH64_OUT32;
+  echo $1 >> $VMATCH64_OUT32;
+
+  echo "" >> $REPMAS_BUFF_OUT4;
+  echo "-----------------------------------------" >> $REPMAS_BUFF_OUT4;
+  echo `date` >> $REPMAS_BUFF_OUT4;
+  echo "" >> $REPMAS_BUFF_OUT4;
+  echo $1 >> $REPMAS_BUFF_OUT4;
+
+  echo "" >> $REPMAS_BUFF_OUT8;
+  echo "-----------------------------------------" >> $REPMAS_BUFF_OUT8;
+  echo `date` >> $REPMAS_BUFF_OUT8;
+  echo "" >> $REPMAS_BUFF_OUT8;
+  echo $1 >> $REPMAS_BUFF_OUT8;
+
+  echo "" >> $REPMAS_BUFF_OUT16;
+  echo "-----------------------------------------" >> $REPMAS_BUFF_OUT16;
+  echo `date` >> $REPMAS_BUFF_OUT16;
+  echo "" >> $REPMAS_BUFF_OUT16;
+  echo $1 >> $REPMAS_BUFF_OUT16;
+
+  echo "" >> $REPMAS_BUFF_OUT32;
+  echo "-----------------------------------------" >> $REPMAS_BUFF_OUT32;
+  echo `date` >> $REPMAS_BUFF_OUT32;
+  echo "" >> $REPMAS_BUFF_OUT32;
+  echo $1 >> $REPMAS_BUFF_OUT32;
+
+
+  echo "" >> $REPMAS_UNBUFF_OUT4;
+  echo "-----------------------------------------" >> $REPMAS_UNBUFF_OUT4;
+  echo `date` >> $REPMAS_UNBUFF_OUT4;
+  echo "" >> $REPMAS_UNBUFF_OUT4;
+  echo $1 >> $REPMAS_UNBUFF_OUT4;
+
+  echo "" >> $REPMAS_UNBUFF_OUT8;
+  echo "-----------------------------------------" >> $REPMAS_UNBUFF_OUT8;
+  echo `date` >> $REPMAS_UNBUFF_OUT8;
+  echo "" >> $REPMAS_UNBUFF_OUT8;
+  echo $1 >> $REPMAS_UNBUFF_OUT8;
+
+  echo "" >> $REPMAS_UNBUFF_OUT16;
+  echo "-----------------------------------------" >> $REPMAS_UNBUFF_OUT16;
+  echo `date` >> $REPMAS_UNBUFF_OUT16;
+  echo "" >> $REPMAS_UNBUFF_OUT16;
+  echo $1 >> $REPMAS_UNBUFF_OUT16;
+
+  echo "" >> $REPMAS_UNBUFF_OUT32;
+  echo "-----------------------------------------" >> $REPMAS_UNBUFF_OUT32;
+  echo `date` >> $REPMAS_UNBUFF_OUT32;
+  echo "" >> $REPMAS_UNBUFF_OUT32;
+  echo $1 >> $REPMAS_UNBUFF_OUT32;
+}
+
+#  LCP 4,8,16,32
+for i in $(ls -1 $DATABASE_DIR/*repmaestro.dat);
+do
+  #make a local copy.
+  cp $i.slb B;
+  cp $i A;
+
+  prepare_output $i;
+      
+  # build vmatch 64-bit
+  echo "Building 64-bit vmatch index";
+  ./mkvtree64 -dna -db A -v -tis -ois -bwt -suf -lcp  -bck -sti1 -pl
+
+  flush_cache;
+  # run vmatch 64-bit
+  echo "Running 64-bit vmatch tandem LCP=4";
+  time (./vmatch64 -nodist -noscore -noidentity -noevalue -absolute -tandem -l 4 A 1> /dev/null) >& tmp;
+  cat tmp >> $VMATCH64_OUT4;
+  rm tmp;
+
+  flush_cache;
+  # run vmatch 64-bit
+  echo "Running 64-bit vmatch tandem LCP=8";
+  time (./vmatch64 -nodist -noscore -noidentity -noevalue -absolute -tandem -l 8 A 1> /dev/null) >& tmp;
+  cat tmp >> $VMATCH64_OUT8;
+  rm tmp;
+
+  flush_cache;
+  # run vmatch 64-bit
+  echo "Running 64-bit vmatch tandem LCP=16";
+  time (./vmatch64 -nodist -noscore -noidentity -noevalue -absolute -tandem -l 16 A 1> /dev/null) >& tmp;
+  cat tmp >> $VMATCH64_OUT16;
+  rm tmp;
+
+  flush_cache;
+  # run vmatch 64-bit
+  echo "Running 64-bit vmatch tandem LCP=32";
+  time (./vmatch64 -nodist -noscore -noidentity -noevalue -absolute -supermax -l 32 A 1> /dev/null) >& tmp;
+  cat tmp >> $VMATCH64_OUT32;
+  rm tmp;
+
+  flush_cache;
+  # run repmaestro
+  echo "Running RepMaestro tandem LCP=4";
+  time (./repmaestro tandem B A 4 > /dev/null) &> tmp;
+  cat tmp >> $REPMAS_BUFF_OUT4;
+  rm tmp;
+
+  flush_cache;
+  # run repmaestro
+  echo "Running RepMaestro tandem LCP=8";
+  time (./repmaestro tandem B A 8 > /dev/null) &> tmp;
+  cat tmp >> $REPMAS_BUFF_OUT8;
+  rm tmp;
+
+  flush_cache;
+  # run repmaestro
+  echo "Running RepMaestro tandem LCP=16";
+  time (./repmaestro tandem B A 16 > /dev/null) &> tmp;
+  cat tmp >> $REPMAS_BUFF_OUT16;
+  rm tmp;
+
+  flush_cache;
+  # run repmaestro
+  echo "Running RepMaestro tandem LCP=32";
+  time (./repmaestro tandem B A 32 > /dev/null) &> tmp;
+  cat tmp >> $REPMAS_BUFF_OUT32;
+  rm tmp;
+
+  flush_cache;
+  # run repmaestro
+  echo "Running RepMaestro tandem_unbuffered LCP=4";
+  time (./repmaestro tandem_unbuffered B A 4 > /dev/null) &> tmp;
+  cat tmp >> $REPMAS_UNBUFF_OUT4;
+  rm tmp;
+
+  flush_cache;
+  # run repmaestro
+  echo "Running RepMaestro tandem_unbuffered LCP=8";
+  time (./repmaestro tandem_unbuffered B A 8 > /dev/null) &> tmp;
+  cat tmp >> $REPMAS_UNBUFF_OUT8;
+  rm tmp;
+
+  flush_cache;
+  # run repmaestro
+  echo "Running RepMaestro tandem_unbuffered LCP=16";
+  time (./repmaestro tandem_unbuffered B A 16 > /dev/null) &> tmp;
+  cat tmp >> $REPMAS_UNBUFF_OUT16;
+  rm tmp;
+  
+  flush_cache;
+  # run repmaestro
+  echo "Running RepMaestro tandem_unbuffered LCP=32";
+  time (./repmaestro tandem_unbuffered B A 32 > /dev/null) &> tmp;
+  cat tmp >> $REPMAS_UNBUFF_OUT32;
+  rm tmp;
+
+  #remove local copy
+  rm -rf A* B;
+done

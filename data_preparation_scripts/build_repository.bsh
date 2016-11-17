@@ -1,0 +1,169 @@
+#! /bin/bash
+
+echo "This script will download and process the genome datasets used by RepMaestro.";
+echo "Note: This may take a lot of time and will eat up lots of space.";
+echo "Please make sure to reserve about 70GB of disk space.";
+echo "Recommend that you build the repository on a machine with at 6GB of RAM.";
+echo "This is because the suffix array generator, bwt generator and importantly, the lcp generator";
+echo "all operate in-memory, and thus, can eat a lot of RAM.";
+echo "";
+
+DATABASE_DIR=$1;
+
+# report the status of the cache flusher
+if [ ! -z ${DATABASE_DIR}  ]
+  then
+    echo "Location of the database repository: "$DATABASE_DIR
+  else
+    echo "You have not specified the location of the database repository!";
+    echo "It is recommended to store the repository on a different disk.";
+    echo "Please provide the full path as a parameter to this script";
+    exit 1;
+fi
+
+mkdir $DATABASE_DIR;
+
+cp *.bsh slb_gen_buffered32 mkvtree32 lcp_gen32 bwt_gen32 ozsort $DATABASE_DIR/;
+
+cd $DATABASE_DIR;
+
+# download required files, if they dont exist (its not fool-proof, so make sure that
+# if the files do exist, that they contain the correct contents.
+
+if [ ! -f twoBitInfo ]
+then
+   wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/twoBitInfo
+else
+   echo "twoBitInfo found, dont have to download new copy."
+fi
+
+if [ ! -f twoBitToFa ]
+then
+   wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/twoBitToFa
+else
+   echo "twoBitToFa found, dont have to download new copy"
+fi
+
+if [ ! -f hg19.2bit ]
+then
+   wget http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.2bit
+else
+   echo "hg19.2bit found, dont have to download new copy"
+fi
+
+# set the permissions
+chmod 700 twoBit*
+
+# uncompress the dataset, clean it up, break it up into its chromosomes 
+# (in occurrence order), convert it to plain text, create the required
+# subsets, then create the slb's ... sigh
+
+./twoBitToFa hg19.2bit hg19.fa -noMask    
+./twoBitInfo hg19.2bit parts
+./generate_chromosomes_from_hg19.bsh;
+./clean_and_convert.bsh hg19.fa;
+
+# create datasets used in supermax experiments, increasing in size (as subsets),
+# to help demonstrate scalability.
+# chromosomes selected based on:
+# du -hs *.dat | sort -n | grep M
+#
+#
+#        name           bytes     Mbps (accum).   
+#25M     chrY.fa.dat  25,653,566  25.7   
+#34M     chr21.fa.dat 35,106,642  60.8
+#34M     chr22.fa.dat 34,894,545  95.7
+#54M     chr19.fa.dat 55,808,983  151.5 
+#57M     chr20.fa.dat 59,505,520  211
+#72M     chr18.fa.dat 74,657,229  285.7 
+#75M     chr17.fa.dat 77,795,210  363.5 
+#76M     chr16.fa.dat 78,884,753  442.4 
+
+# one
+cp chrY.fa.dat 25.7Mbps_repmaestro.dat
+
+#two
+cp 25.7Mbps_repmaestro.dat 60.8Mbps_repmaestro.dat;
+cat chr21.fa.dat >> 60.8Mbps_repmaestro.dat;
+
+#three
+cp 60.8Mbps_repmaestro.dat 95.7Mbps_repmaestro.dat;
+cat chr22.fa.dat >> 95.7Mbps_repmaestro.dat;
+
+#four
+cp 95.7Mbps_repmaestro.dat 151.5Mbps_repmaestro.dat;
+cat chr19.fa.dat >> 151.5Mbps_repmaestro.dat;
+
+#five
+cp 151.5Mbps_repmaestro.dat 211Mbps_repmaestro.dat;
+cat chr20.fa.dat >> 211Mbps_repmaestro.dat;
+
+#six
+cp 211Mbps_repmaestro.dat 285.7Mbps_repmaestro.dat;
+cat chr18.fa.dat >> 285.7Mbps_repmaestro.dat;
+
+#seven
+cp 285.7Mbps_repmaestro.dat 363.5Mbps_repmaestro.dat
+cat chr17.fa.dat >> 363.5Mbps_repmaestro.dat;
+
+#eight
+cp 363.5Mbps_repmaestro.dat 442.4Mbps_repmaestro.dat
+cat chr16.fa.dat >> 442.4Mbps_repmaestro.dat;
+
+
+# build MUM datasets;
+
+#one
+cat chrY.fa.dat > chrY#chr21_repmaestro_mum.dat;
+echo -n "#" >> chrY#chr21_repmaestro_mum.dat
+cat chr21.fa.dat >> chrY#chr21_repmaestro_mum.dat
+
+#two
+cat chr19.fa.dat > chr19#chr20_repmaestro_mum.dat;
+echo -n "#" >> chr19#chr20_repmaestro_mum.dat
+cat chr20.fa.dat >> chr19#chr20_repmaestro_mum.dat
+
+#three
+cat chr16.fa.dat > chr16#chr17_repmaestro_mum.dat;
+echo -n "#" >> chr16#chr17_repmaestro_mum.dat
+cat chr17.fa.dat >> chr16#chr17_repmaestro_mum.dat
+
+#four 
+cat chr13.fa.dat > chr13#chr14_repmaestro_mum.dat;
+echo -n "#" >> chr13#chr14_repmaestro_mum.dat
+cat chr14.fa.dat >> chr13#chr14_repmaestro_mum.dat
+
+#five
+cat chr10.fa.dat > chr10#chr11_repmaestro_mum.dat;
+echo -n "#" >> chr10#chr11_repmaestro_mum.dat
+cat chr11.fa.dat >> chr10#chr11_repmaestro_mum.dat;
+
+./automate_slb_generation.bsh #linear
+
+#generate extra mum datasets where chr10.fa.dat remains a constant
+#reference datasets, and the rest are query datasets
+echo "Generating extra MuM datasets ...";
+echo "Skipped ... modify script to enable";
+
+# **** uncomment all the lines below to enable extra MuM datasets.
+
+#mkdir EXTRA_MUM_DATASETS;
+#cp capture_fasta_headers.bsh build_mum_slb_array.bsh gensort suffix_gen lcp_gen bwt_gen slb_gen_buffered automate_slb_generation.bsh generate_chromosomes_from_hg19.bsh fasta_to_plain.bsh clean_and_convert.bsh chr10.fa chrY.fa chr21.fa chr19.fa chr20.fa chr16.fa chr17.fa chr13.fa chr14.fa chr11.fa  EXTRA_MUM_DATASETS; 
+#cd EXTRA_MUM_DATASETS;
+
+#echo "Generating extra MuM datasets ... this is optional. Control-c to terminate";
+#echo "Will now use 13n LCP generation, edit script to disable.".
+
+#./build_mum_slb_array.bsh chr10.fa.dat chrY.fa y linear;
+#./build_mum_slb_array.bsh chr10.fa.dat chr21.fa y linear;
+#./build_mum_slb_array.bsh chr10.fa.dat chr19.fa y linear;
+#./build_mum_slb_array.bsh chr10.fa.dat chr20.fa y linear;
+#./build_mum_slb_array.bsh chr10.fa.dat chr16.fa y linear;
+#./build_mum_slb_array.bsh chr10.fa.dat chr17.fa y linear;
+#./build_mum_slb_array.bsh chr10.fa.dat chr13.fa y linear;
+#./build_mum_slb_array.bsh chr10.fa.dat chr14.fa y linear;
+#./build_mum_slb_array.bsh chr10.fa.dat chr11.fa y linear;
+
+sync;
+
+echo "Datasets are ready ...";

@@ -1,0 +1,212 @@
+#! /bin/bash
+
+echo "Running RepMaestro Experiments for Supermaximal Repeats.";
+
+# leave as blank to disable
+FLUSH_CACHE=$2
+
+#disable the swap, to enforce memory upper-bounds.  Otherwise, a program that
+#grows beyond RAM capacity will move into swap, which will be very slow and
+#can grind the system down to a halt.  So, its best if the O/S kills a process
+#if it grows too big, as intended. you may need root access for this.
+# --- commented out for now: assuming the swap is disabled before the script starts. 
+#echo "Disabling swap";
+#sudo swapoff -a
+
+# this is the (full path) location of all of the database/sequence files, including the pre-built indexes.
+DATABASE_DIR=$1
+
+# output file
+SEQAN_OUTPUT15=seqan.supermax.results_lcp15;
+VMATCH32_OUT15=vmatch32.supermax.results_lcp15;
+VMATCH64_OUT15=vmatch64.supermax.results_lcp15;
+
+SEQAN_OUTPUT30=seqan.supermax.results_lcp30;
+VMATCH32_OUT30=vmatch32.supermax.results_lcp30;
+VMATCH64_OUT30=vmatch64.supermax.results_lcp30;
+
+REPMAS_OUT15=repmaestro.supermax_lcp15;
+REPMAS_OUT30=repmaestro.supermax_lcp30;
+
+# report the status of the cache flusher
+if [ ! -z ${FLUSH_CACHE}  ]
+  then
+    echo "Cache flushing is enabled.";
+  else
+    echo "Cache flushing is disabled.";
+fi
+
+# report the status of the cache flusher
+if [ ! -z ${DATABASE_DIR}  ]
+  then
+    echo "Location of the database repository: "$DATABASE_DIR
+  else
+    echo "You have not specified the location of the database repository!";
+    echo "It is recommended to store the repository on a different disk.";
+    exit 1;
+fi
+
+# function to flush system caches, if enabled.
+function flush_cache {
+  if [ ! -z ${FLUSH_CACHE}  ]
+  then
+     ./gensort -a 42393600 flush.dataset;
+     ./ozsort flush.dataset flush.dataset;
+  fi
+}
+
+function prepare_output15 
+{
+  echo $1; echo "LCP 15";
+
+  echo "" >> $SEQAN_OUTPUT15;
+  echo "-----------------------------------------" >> $SEQAN_OUTPUT15;
+  echo `date` >> $SEQAN_OUTPUT15;
+  echo "" >> $SEQAN_OUTPUT15;
+  echo $1 >> $SEQAN_OUTPUT15;
+
+  echo "" >> $VMATCH32_OUT15;
+  echo "-----------------------------------------" >> $VMATCH32_OUT15;
+  echo `date` >> $VMATCH32_OUT15;
+  echo "" >> $VMATCH32_OUT15;
+  echo $1 >> $VMATCH32_OUT15;
+
+  echo "" >> $VMATCH64_OUT15;
+  echo "-----------------------------------------" >> $VMATCH64_OUT15;
+  echo `date` >> $VMATCH64_OUT15;
+  echo "" >> $VMATCH64_OUT15;
+  echo $1 >> $VMATCH64_OUT15;
+
+  echo "" >> $REPMAS_OUT15;
+  echo "-----------------------------------------" >> $REPMAS_OUT15;
+  echo `date` >> $REPMAS_OUT15;
+  echo "" >> $REPMAS_OUT15;
+  echo $1 >> $REPMAS_OUT15;
+}
+
+function prepare_output30
+{
+  echo $1; echo "LCP 30";
+  echo "" >> $SEQAN_OUTPUT30;
+  echo "-----------------------------------------" >> $SEQAN_OUTPUT30;
+  echo `date` >> $SEQAN_OUTPUT30;
+  echo "" >> $SEQAN_OUTPUT30;
+  echo $1 >> $SEQAN_OUTPUT30;
+
+  echo "" >> $VMATCH32_OUT30;
+  echo "-----------------------------------------" >> $VMATCH32_OUT30;
+  echo `date` >> $VMATCH32_OUT30;
+  echo "" >> $VMATCH32_OUT30;
+  echo $1 >> $VMATCH32_OUT30;
+
+  echo "" >> $VMATCH64_OUT30;
+  echo "-----------------------------------------" >> $VMATCH64_OUT30;
+  echo `date` >> $VMATCH64_OUT30;
+  echo "" >> $VMATCH64_OUT30;
+  echo $1 >> $VMATCH64_OUT30;
+
+  echo "" >> $REPMAS_OUT30;
+  echo "-----------------------------------------" >> $REPMAS_OUT30;
+  echo `date` >> $REPMAS_OUT30;
+  echo "" >> $REPMAS_OUT30;
+  echo $1 >> $REPMAS_OUT30;
+}
+
+#  LCP 15
+for i in $(ls -1 $DATABASE_DIR/*repmaestro.dat);
+do
+  #make a local copy.
+  cp $i.slb A;
+  cp $i B;
+
+  prepare_output15 $i;
+
+  flush_cache;
+  # run sequan
+  echo "Running SeQan supermax LCP=15";
+  time (./index_supermaxrepeats_lcp15_SeqAn B 1> /dev/null) >& tmp;
+  cat tmp >> $SEQAN_OUTPUT15;
+  rm tmp;
+
+  # build vmatch 32-bit
+  echo "Building 32-bit vmatch index";
+  ./mkvtree32 -dna -db B -v -tis -ois -bwt -suf -lcp  -bck -sti1 -pl
+
+  flush_cache;
+  # run vmatch 32-bit
+  echo "Running 32-bit vmatch supermax LCP=15";
+  time (./vmatch32 -nodist -noscore -noidentity -noevalue -absolute -supermax -l 15 B 1> /dev/null) >& tmp;
+  cat tmp >> $VMATCH32_OUT15;
+  rm tmp;
+
+  # build vmatch 64-bit
+  echo "Building 64-bit vmatch index";
+  ./mkvtree64 -dna -db B -v -tis -ois -bwt -suf -lcp  -bck -sti1 -pl
+
+  flush_cache;
+  # run vmatch 64-bit
+  echo "Running 64-bit vmatch supermax LCP=15";
+  time (./vmatch64 -nodist -noscore -noidentity -noevalue -absolute -supermax -l 15 B 1> /dev/null) >& tmp;
+  cat tmp >> $VMATCH64_OUT15;
+  rm tmp;
+
+
+  flush_cache;
+  # run repmaestro
+  echo "Running RepMaestro supermax LCP=15";
+  time (./repmaestro supermax A 15 > /dev/null) &> tmp;
+  cat tmp >> $REPMAS_OUT15;
+  rm tmp;
+
+  #remove local copy
+  rm -rf A* B*;
+done
+
+for i in $(ls -1 $DATABASE_DIR/*repmaestro.dat);
+do
+  #make a local copy.
+  cp $i.slb A;
+  cp $i B;
+
+  prepare_output30 $i;
+  flush_cache;
+
+  # run sequan
+  echo "Running SeQan supermax LCP=30";
+  time (./index_supermaxrepeats_lcp30_SeqAn B 1> /dev/null) >& tmp;
+  cat tmp >> $SEQAN_OUTPUT30;
+  rm tmp;
+
+  # build vmatch 32-bit
+  echo "Building 32-bit vmatch index";
+  ./mkvtree32 -dna -db B -v -tis -ois -bwt -suf -lcp  -bck -sti1 -pl
+
+  flush_cache;
+  # run vmatch 32-bit
+  echo "Running 32-bit vmatch supermax LCP=30";
+  time (./vmatch32 -nodist -noscore -noidentity -noevalue -absolute -supermax -l 30 B 1> /dev/null) >& tmp;
+  cat tmp >> $VMATCH32_OUT30;
+  rm tmp;
+
+  # build vmatch 64-bit
+  echo "Building 64-bit vmatch index";
+  ./mkvtree64 -dna -db B -v -tis -ois -bwt -suf -lcp  -bck -sti1 -pl
+
+  flush_cache;
+  # run vmatch 64-bit
+  echo "Running 64-bit vmatch supermax LCP=30";
+  time (./vmatch64 -nodist -noscore -noidentity -noevalue -absolute -supermax -l 30 B 1> /dev/null) >& tmp;
+  cat tmp >> $VMATCH64_OUT30;
+  rm tmp;
+
+
+  flush_cache;
+  # run repmaestro
+  echo "Running RepMaestro supermax LCP=30";
+  time (./repmaestro supermax A 30 > /dev/null) &> tmp;
+  cat tmp >> $REPMAS_OUT30;
+  rm tmp;
+
+  #remove local copy
+  rm -rf A* B*;
+done

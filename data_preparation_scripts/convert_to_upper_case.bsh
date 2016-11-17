@@ -1,0 +1,19 @@
+#! /bin/bash
+
+# Takes a file (presumably a FastA file), removes all 'N' and newlines, and '>' lines, and generates a .dat file
+if [[ -z $1 ]]
+then
+  echo;
+  echo "-------------------------------------------------------------------------------------------------------";
+  echo "Incorrect usage.  Try: ./convert_to_upper_case.bsh file";
+  echo "This script will make sure that a dataset (FastA or plain) is all uppercase (or opt. lower-case)";
+  echo "This is important for RepMaestro, since it assumes either an upper-case or lower-case alphabet";
+  echo "You dont need to call this if you are building the datasets using our ./build_repository.bsh script";
+  echo "Note: This sript will replace the original file with the updated version";
+  echo "-------------------------------------------------------------------------------------------------------";
+  echo ""
+  exit 1;
+fi
+
+cat $1 | tr '[:lower:]' '[:upper:]' > $1.tmp;
+mv $1.tmp $1

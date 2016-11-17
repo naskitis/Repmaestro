@@ -1,0 +1,20 @@
+#! /bin/bash
+
+# Takes a file (presumably a FastA file), removes all 'N' and newlines, and '>' lines, and generates a .dat file
+if [[ -z $1 ]]
+then
+  echo;
+  echo "-------------------------------------------------------------------------------------------------------";
+  echo "Incorrect usage.  Try: ./clean_and_convert_keep_N.bsh input-genome-sequence-file-name-in-fasta-format";
+  echo "This script will convert Fasta to plain, and collapse the file";
+  echo "into a single line.  It will not remove the N character from the text.";
+  echo "Assuming the original sequence is in (all) upper-case letters";
+  echo "-------------------------------------------------------------------------------------------------------";
+  echo ""
+  exit 1;
+fi
+
+./capture_fasta_headers.bsh $1 $1
+./fasta_to_plain.bsh $1 $1.tmp
+cat $1.tmp | tr -d '\n' > $1.dat
+rm $1.tmp;

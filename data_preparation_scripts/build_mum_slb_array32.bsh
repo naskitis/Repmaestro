@@ -1,0 +1,88 @@
+#! /bin/bash
+# This script will read in the file provided, clean it and convert it
+# into a  file, then generate an slb for use in MuM processing. 
+
+if [[ -z $1 ]]
+then
+  echo "To genereate an SLB array for Maximal Unique Matching, please provide two file names, eg. " $0 "first-file  second-file y/n (linear)";
+  exit 1;
+fi
+
+if [[ -z $2 ]]
+then
+  echo "To genereate an SLB array for Maximal Unique Matching, please provide two file names followed by a y or n to remove 'N' chars, eg. " $0 "first-file  second-file  y/n (linear)";
+  exit 1;
+fi
+
+if [[ -z $3 ]]
+then
+  echo "Please state  'y' or 'n' as the third parameter to this script: 'y' to remove all 'N' characters. Defaults to 'y' on unrecognized input." 
+  exit 1;
+fi
+
+KEEP_N=$3
+
+
+echo "Building a 9n SLB array for the specified file: "$1
+echo "Assuming the file is in all upper-case (no masking).";
+echo "This script will convert a FastA into plain-text.";
+echo "Processing file: "$1  
+
+./convert_to_upper_case.bsh $1
+
+if [[ $KEEP_N == 'y' ]]
+then
+  echo "Will now remove all 'N' characaters from the sequence. Please keep note of this for future reference."
+  ./clean_and_convert.bsh $1
+else
+  echo "Will now keep all 'N' character from the sequence. Please keep note of this for future reference"
+  ./clean_and_convert_keep_N.bsh $1
+fi
+
+#./suffix_gen $1.dat $1.dat.suf 
+./mkvtree32 -dna -db $1.dat -suf -pl
+./lcp_gen32 $1.dat.suf $1.dat $1.dat.lcp $4
+./bwt_gen32 $1.dat.suf $1.dat $1.dat.bwt
+./slb_gen_buffered32 $1.dat.suf $1.dat.lcp $1.dat.bwt $1.dat.slb
+
+
+echo "Building a 9n SLB array for the specified file: "$2
+echo "Assuming the file is in all upper-case (no masking).";
+echo "This script will convert a FastA into plain-text.";
+echo "Processing file: "$2  
+
+./convert_to_upper_case.bsh $2
+
+if [[ $KEEP_N == 'y' ]]
+then
+  echo "Will now remove all 'N' characaters from the sequence. Please keep note of this for future reference."
+  ./clean_and_convert.bsh $2
+else
+  echo "Will now keep all 'N' character from the sequence. Please keep note of this for future reference"
+  ./clean_and_convert_keep_N.bsh $2
+fi
+
+#./suffix_gen $2.dat $2.dat.suf 
+./mkvtree32 -dna -db $2.dat -suf -pl
+./lcp_gen32 $2.dat.suf $2.dat $2.dat.lcp $4
+./bwt_gen32 $2.dat.suf $2.dat $2.dat.bwt
+./slb_gen_buffered32 $2.dat.suf $2.dat.lcp $2.dat.bwt $2.dat.slb
+
+
+echo "Building MuM SLB ... 9n"
+
+cat $1.dat > $1#$2.dat
+echo -n "#" >> $1#$2.dat
+cat $2.dat >> $1#$2.dat
+
+
+#./suffix_gen $1#$2.dat $1#$2.dat.suf 
+./mkvtree32 -db $1#$2.dat -suf 
+./lcp_gen32 $1#$2.dat.suf $1#$2.dat $1#$2.dat.lcp $4
+./bwt_gen32 $1#$2.dat.suf $1#$2.dat $1#$2.dat.bwt
+./slb_gen_buffered32 $1#$2.dat.suf $1#$2.dat.lcp $1#$2.dat.bwt $1#$2.dat.slb 
+
+echo "--------------------------------------------------------------";
+echo "$1#$2.dat"
+echo "$1#$2.dat.slb"
+echo "are ready.";

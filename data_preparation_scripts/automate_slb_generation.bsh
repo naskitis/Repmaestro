@@ -1,0 +1,18 @@
+#! /bin/bash
+# This script will read in all *.dat files, which are plain text genome sequence from the
+# current directory.  For every file, it will generate a lcp array, a bwt array, then merge
+# then together to form an slb array (in a non-compressed form).
+# Minimum 4GB of RAM required.  For faster generation, use at least 6GB of RAM.
+echo "Building SLB array for all .dat files in the current directory.";
+echo "Assuming the .dat files are in all upper-case (no masking) and have been converted";
+echo "to plain text via clean_and_convert.bsh."
+echo "Pass the parameter 'linear' to use 13n LCP construction"
+for i in $(ls -1 *repmaestro*.dat);
+do
+  echo "Processing file: "$i  
+  #./suffix_gen $i $i.suf
+  ./mkvtree32 -db $i -suf -pl 5
+  ./lcp_gen32 $i.suf $i $i.lcp $1
+  ./bwt_gen32 $i.suf $i $i.bwt
+  ./slb_gen_buffered32 $i.suf $i.lcp $i.bwt $i.slb
+done

@@ -1,0 +1,193 @@
+#! /bin/bash
+
+echo "Running RepMaestro Experiments for Maximal Unique Matches (MuM) with no cache flushing. You many need to modify this script to support different MuM filenames.";
+
+# leave as blank to disable
+FLUSH_CACHE=$2
+
+#disable the swap, to enforce memory upper-bounds.  Otherwise, a program that
+#grows beyond RAM capacity will move into swap, which will be very slow and
+#can grind the system down to a halt.  So, its best if the O/S kills a process
+#if it grows too big, as intended. you may need root access for this.
+# --- commented out for now: assuming the swap is disabled before the script starts. 
+#echo "Disabling swap";
+#sudo swapoff -a
+
+# this is the (full path) location of all of the database/sequence files, including the pre-built indexes.
+DATABASE_DIR=$1
+
+# output file
+SEQAN_OUTPUT15=seqan.mum.results_lcp15;
+VMATCH32_OUT15=vmatch32.mum.results_lcp15;
+VMATCH64_OUT15=vmatch64.mum.results_lcp15;
+MUMMER_OUT15=mummer.mum.results_lcp15;
+
+SEQAN_OUTPUT30=seqan.mum.results_lcp30;
+VMATCH32_OUT30=vmatch32.mum.results_lcp30;
+VMATCH64_OUT30=vmatch64.mum.results_lcp30;
+MUMMER_OUT30=mummer.mum.results_lcp30;
+
+REPMAS_OUT15=repmaestro.mum_lcp15;
+REPMAS_OUT30=repmaestro.mum_lcp30;
+
+# report the status of the cache flusher
+if [ ! -z ${FLUSH_CACHE}  ]
+  then
+    echo "Cache flushing is enabled.";
+  else
+    echo "Cache flushing is disabled.";
+fi
+
+# report the status of the cache flusher
+if [ ! -z ${DATABASE_DIR}  ]
+  then
+    echo "Location of the database repository: "$DATABASE_DIR
+  else
+    echo "You have not specified the location of the database repository!";
+    echo "It is recommended to store the repository on a different disk.";
+    exit 1;
+fi
+
+# function to flush system caches, if enabled.
+function flush_cache {
+  if [ ! -z ${FLUSH_CACHE}  ]
+  then
+     ./gensort -a 42393600 flush.dataset;
+     ./ozsort flush.dataset flush.dataset;
+  fi
+}
+
+function prepare_output15 
+{
+  echo $1; echo "LCP 15";
+  echo "" >> $VMATCH32_OUT15;
+  echo "-----------------------------------------" >> $VMATCH32_OUT15;
+  echo `date` >> $VMATCH32_OUT15;
+  echo "" >> $VMATCH32_OUT15;
+  echo $1 >> $VMATCH32_OUT15;
+
+  echo "" >> $VMATCH64_OUT15;
+  echo "-----------------------------------------" >> $VMATCH64_OUT15;
+  echo `date` >> $VMATCH64_OUT15;
+  echo "" >> $VMATCH64_OUT15;
+  echo $1 >> $VMATCH64_OUT15;
+
+  echo "" >> $REPMAS_OUT15;
+  echo "-----------------------------------------" >> $REPMAS_OUT15;
+  echo `date` >> $REPMAS_OUT15;
+  echo "" >> $REPMAS_OUT15;
+  echo $1 >> $REPMAS_OUT15;
+
+  echo "" >> $MUMMER_OUT15;
+  echo "-----------------------------------------" >> $MUMMER_OUT15;
+  echo `date` >> $MUMMER_OUT15;
+  echo "" >> $MUMMER_OUT15;
+  echo $1 >> $MUMMER_OUT15;
+}
+
+function prepare_output30
+{
+  echo $1; echo "LCP 30";
+
+  echo "" >> $VMATCH32_OUT30;
+  echo "-----------------------------------------" >> $VMATCH32_OUT30;
+  echo `date` >> $VMATCH32_OUT30;
+  echo "" >> $VMATCH32_OUT30;
+  echo $1 >> $VMATCH32_OUT30;
+
+  echo "" >> $VMATCH64_OUT30;
+  echo "-----------------------------------------" >> $VMATCH64_OUT30;
+  echo `date` >> $VMATCH64_OUT30;
+  echo "" >> $VMATCH64_OUT30;
+  echo $1 >> $VMATCH64_OUT30;
+
+  echo "" >> $REPMAS_OUT30;
+  echo "-----------------------------------------" >> $REPMAS_OUT30;
+  echo `date` >> $REPMAS_OUT30;
+  echo "" >> $REPMAS_OUT30;
+  echo $1 >> $REPMAS_OUT30;
+
+  echo "" >> $MUMMER_OUT30;
+  echo "-----------------------------------------" >> $MUMMER_OUT30;
+  echo `date` >> $MUMMER_OUT30;
+  echo "" >> $MUMMER_OUT30;
+  echo $1 >> $MUMMER_OUT30;
+}
+
+#  LCP 15
+for i in $(ls -1 $DATABASE_DIR/*#*repmaestro_mum.dat)
+do
+  #make a local copy.
+  cp $i.slb C;
+
+  prepare_output15 $i;
+  
+  a=`echo $i | awk 'BEGIN { FS = "#" }; { print $1".fa.dat" }'`;
+  t=`echo $i | awk 'BEGIN { FS = "#" }; { print $2 }' | sed 's/_repmaestro_mum/.fa/g'`;
+  b=$DATABASE_DIR/$t;
+
+  a_size=`ls -l $a | awk '{print $5}'`;  
+
+  echo $i;
+  echo $a;
+  echo $b;
+  echo $a_size;
+
+  cp $a A;
+  cp $b B;
+
+  # build vmatch 64-bit
+  echo "Building 32-bit vmatch index";
+  ./mkvtree32 -dna -db A -v -tis -ois -bwt -suf -lcp  -bck -sti1 -pl
+  ./mkvtree32 -dna -db B -v -tis -ois -bwt -suf -lcp  -bck -sti1 -pl
+
+  flush_cache;
+  # run vmatch 32-bit
+  echo "Running 32-bit vmatch MuM LCP=15";
+  time (./vmatch32 -nodist -noscore -noidentity -noevalue -absolute -mum -l 15 -q B A 1> /dev/null) >& tmp;
+  time (./vmatch32 -nodist -noscore -noidentity -noevalue -absolute -mum -l 15 -q B A 1> /dev/null) >& tmp;
+
+  cat tmp >> $VMATCH32_OUT15;
+  rm tmp;
+
+  # build vmatch 64-bit
+  echo "Building 64-bit vmatch index";
+  ./mkvtree64 -dna -db A -v -tis -ois -bwt -suf -lcp  -bck -sti1 -pl
+  ./mkvtree64 -dna -db B -v -tis -ois -bwt -suf -lcp  -bck -sti1 -pl
+
+  flush_cache;
+  # run vmatch 64-bit
+  echo "Running 64-bit vmatch MuM LCP=15";
+  time (./vmatch64 -nodist -noscore -noidentity -noevalue -absolute -mum -l 15 -q B A 1> /dev/null) >& tmp;
+  time (./vmatch64 -nodist -noscore -noidentity -noevalue -absolute -mum -l 15 -q B A 1> /dev/null) >& tmp;
+ 
+
+  cat tmp >> $VMATCH64_OUT15;
+  rm tmp;
+
+  ./plain_to_fasta.bsh A
+  ./plain_to_fasta.bsh B
+
+  flush_cache;
+  # run MUMmer
+  echo "Running mummer LCP=15";
+  time (./mummer -mum -n -l 15 B.fa A.fa > /dev/null) >& tmp;
+  time (./mummer -mum -n -l 15 B.fa A.fa > /dev/null) >& tmp;
+
+  cat tmp >> $MUMMER_OUT15;
+  rm tmp;
+
+  flush_cache;
+  # run repmaestro
+  echo "Running RepMaestro MuM LCP 15";
+  time (./repmaestro mum C $a_size 15 > /dev/null) &> tmp;
+  time (./repmaestro mum C $a_size 15 > /dev/null) &> tmp;
+
+  cat tmp >> $REPMAS_OUT15;
+  rm tmp;
+
+  #remove local copy;  
+  rm C;
+  rm A;
+  rm B;
+done

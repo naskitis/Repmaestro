@@ -1,0 +1,40 @@
+#! /bin/bash
+# This script will read in the file provided, clean it and convert it
+# into a  file, then generate an slb.
+
+if [[ -z $1 ]]
+then
+  echo "Please provide a file name as the first parameter to this script";
+  exit 1;
+fi
+
+if [[ -z $2 ]]
+then
+  echo "Please state  'y' or 'n' as the second parameter to this script: 'y' to remove all 'N' characters. Defaults to 'y' on unrecognized input." 
+  exit 1;
+fi
+
+KEEP_N=$2
+
+echo "Building a 9n SLB array for the specified file: "$1
+echo "Assuming the file is in all upper-case (no masking).";
+echo "This script will convert a FastA into plain-text.";
+echo "Processing file: "$1  
+echo "Add 'linear' as the third paramater to enable 13n LCP computation"
+
+./convert_to_upper_case.bsh $1
+
+if [[ $KEEP_N == 'y' ]]
+then
+  echo "Will now remove all 'N' characaters from the sequence. Please keep note of this for future reference."
+  ./clean_and_convert.bsh $1
+else
+  echo "Will now keep all 'N' character from the sequence. Please keep note of this for future reference"
+  ./clean_and_convert_keep_N.bsh $1
+fi
+
+#./suffix_gen $1.dat $1.dat.suf 
+./mkvtree32 -dna -db $1.dat -suf -pl 	
+./lcp_gen32 $1.dat.suf $1.dat $1.dat.lcp $3
+./bwt_gen32 $1.dat.suf $1.dat $1.dat.bwt
+./slb_gen_buffered32 $1.dat.suf $1.dat.lcp $1.dat.bwt $1.dat.slb

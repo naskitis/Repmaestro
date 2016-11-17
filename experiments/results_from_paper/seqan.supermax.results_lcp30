@@ -1,0 +1,88 @@
+
+-----------------------------------------
+Mon Apr 26 14:29:57 EST 2010
+
+data//151.5Mbps_repmaestro.dat
+terminate called after throwing an instance of 'std::bad_alloc'
+  what():  std::bad_alloc
+./run_repmaestro_experiments_supermax.bsh: line 164: 13557 Aborted                 ./index_supermaxrepeats30 B > /dev/null
+
+real	6m3.886s
+user	5m58.560s
+sys	0m3.350s
+
+-----------------------------------------
+Mon Apr 26 14:47:33 EST 2010
+
+data//211Mbps_repmaestro.dat
+terminate called after throwing an instance of 'std::bad_alloc'
+  what():  std::bad_alloc
+./run_repmaestro_experiments_supermax.bsh: line 164: 13951 Aborted                 ./index_supermaxrepeats30 B > /dev/null
+
+real	8m40.335s
+user	8m35.270s
+sys	0m4.040s
+
+-----------------------------------------
+Mon Apr 26 15:09:20 EST 2010
+
+data//25.7Mbps_repmaestro.dat
+Number of seconds taken: 47.945086
+
+real	0m48.479s
+user	0m47.710s
+sys	0m0.580s
+
+-----------------------------------------
+Mon Apr 26 15:19:03 EST 2010
+
+data//285.7Mbps_repmaestro.dat
+./run_repmaestro_experiments_supermax.bsh: line 164: 14730 Killed                  ./index_supermaxrepeats30 B > /dev/null
+
+real	7m47.800s
+user	7m39.120s
+sys	0m3.480s
+
+-----------------------------------------
+Mon Apr 26 15:43:06 EST 2010
+
+data//363.5Mbps_repmaestro.dat
+terminate called after throwing an instance of 'std::bad_alloc'
+  what():  std::bad_alloc
+./run_repmaestro_experiments_supermax.bsh: line 164: 15132 Aborted                 ./index_supermaxrepeats30 B > /dev/null
+
+real	4m8.908s
+user	4m3.540s
+sys	0m2.410s
+
+-----------------------------------------
+Mon Apr 26 16:03:48 EST 2010
+
+data//442.4Mbps_repmaestro.dat
+terminate called after throwing an instance of 'std::bad_alloc'
+  what():  std::bad_alloc
+./run_repmaestro_experiments_supermax.bsh: line 164: 15519 Aborted                 ./index_supermaxrepeats30 B > /dev/null
+
+real	0m5.291s
+user	0m1.760s
+sys	0m1.530s
+
+-----------------------------------------
+Mon Apr 26 16:19:09 EST 2010
+
+data//60.8Mbps_repmaestro.dat
+Number of seconds taken: 131.098361
+
+real	2m12.114s
+user	2m10.400s
+sys	0m1.300s
+
+-----------------------------------------
+Mon Apr 26 16:30:27 EST 2010
+
+data//95.7Mbps_repmaestro.dat
+Number of seconds taken: 220.859392
+
+real	3m42.218s
+user	3m39.390s
+sys	0m2.310s

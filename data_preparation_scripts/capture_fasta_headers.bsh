@@ -1,0 +1,29 @@
+#! /bin/bash
+
+# Takes a file (presumably a FastA file) and stores all of its FastA header info and offsets.
+if [[ -z $1 ]]
+then
+  echo;
+  echo "-------------------------------------------------------------------------------------------------------";
+  echo "Incorrect usage.  Try: ./capture_fasta_headers.bsh input-genome-sequence-file-name-in-fasta-format input-file (original file name)";
+  echo "This script will capture the FastA headers and stored them in a .headers file, along with offsets";
+  echo "This script works with a multi FastA formatted file, meaning, a FastA file with more than 1 '>' tag in it."
+  echo "-------------------------------------------------------------------------------------------------------";
+  echo ""
+  exit 1;
+fi
+
+if [[ -z $2 ]]
+then
+  echo;
+  echo "-------------------------------------------------------------------------------------------------------";
+  echo "Incorrect usage.  Try: ./capture_fasta_headers.bsh input-genome-sequence-file-name-in-fasta-format input-file (original file name)";
+  echo "This script will capture the FastA headers and stored them in a .headers file, along with offsets"; 
+  echo "This script works with a multi FastA formatted file, meaning, a FastA file with more than 1 '>' tag in it."
+  echo "-------------------------------------------------------------------------------------------------------";  
+  echo ""
+  exit 1;
+fi
+
+
+cat $1 | awk 'BEGIN{line=0; cnt=0} {line=line+1; if ('/\>/') {printf("%d %d %s\n", cnt, line, $1);} else {cnt=cnt+length($1) }}' > $2.headers;

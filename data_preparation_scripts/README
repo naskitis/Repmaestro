@@ -1,0 +1,5 @@
+Scripts used to generate datasets and run experiments.  
+Use these scripts in the "experiments" directory only,
+since they call other tools that are present within the 
+experiments directory.
+

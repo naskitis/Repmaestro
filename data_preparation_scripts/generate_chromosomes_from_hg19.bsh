@@ -1,0 +1,9 @@
+#! /bin/bash
+
+for i in $(cat parts | awk '{print $1}');
+do
+  echo $i;
+  ./twoBitToFa hg19.2bit $i.fa -seq=$i -noMask
+  ./capture_fasta_headers.bsh $i.fa $i.fa
+  ./clean_and_convert.bsh $i.fa
+done

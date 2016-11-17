@@ -1,0 +1,45 @@
+
+-----------------------------------------
+Mon Apr 26 16:44:23 EST 2010
+
+data//chr10#chr11_repmaestro_mum.dat
+
+real	0m20.149s
+user	0m11.160s
+sys	0m2.740s
+
+-----------------------------------------
+Mon Apr 26 17:06:42 EST 2010
+
+data//chr13#chr14_repmaestro_mum.dat
+
+real	0m14.216s
+user	0m7.570s
+sys	0m1.880s
+
+-----------------------------------------
+Mon Apr 26 17:23:59 EST 2010
+
+data//chr16#chr17_repmaestro_mum.dat
+
+real	0m12.095s
+user	0m5.910s
+sys	0m1.650s
+
+-----------------------------------------
+Mon Apr 26 17:39:09 EST 2010
+
+data//chr19#chr20_repmaestro_mum.dat
+
+real	0m9.055s
+user	0m4.100s
+sys	0m1.150s
+
+-----------------------------------------
+Mon Apr 26 17:51:53 EST 2010
+
+data//chrY#chr21_repmaestro_mum.dat
+
+real	0m4.815s
+user	0m2.010s
+sys	0m0.650s
